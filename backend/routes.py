@@ -25,8 +25,20 @@ class UserRegister(Resource):
 api.add_resource(UserRegister, '/register')
 
 class UserLogin(Resource):
-    def get(self):
-        return {'message': 'User logged in successfully'}, 200
+    def post(self):
+        data = request.get_json()
+        if not data or 'username' not in data or 'password' not in data:
+            return {'message': 'Username and password required'}, 400
+        if not data['username'] or not data['password']:
+            return {'message': 'Username and password cannot be empty'}, 400
+        
+        user = User.query.filter_by(username=data['username']).first()
+        if not user or user.password != data['password']:
+            return {'message': 'Invalid credentials'}, 401
+        
+        # create a token
+        
+        return {'message': 'Login successful', 'user_id': user.id}, 200
 api.add_resource(UserLogin, '/login')
 
 ## Admin related routes
