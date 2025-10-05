@@ -11,3 +11,9 @@ cd backend
 activate your virtual environment
 
 ### Frontend
+
+cd frontend
+
+npm install
+
+npm run dev
