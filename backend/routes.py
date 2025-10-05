@@ -1,5 +1,6 @@
 from flask_restful import Api, Resource
 from flask import request
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 api = Api()
 
 from models import User, Post, db
@@ -37,20 +38,28 @@ class UserLogin(Resource):
             return {'message': 'Invalid credentials'}, 401
         
         # create a token
-        
-        return {'message': 'Login successful', 'user_id': user.id}, 200
+        token = create_access_token(identity=user.username)
+        return {'message': 'Login successful', 'user_id': user.id, 'token': token}, 200
 api.add_resource(UserLogin, '/login')
 
 ## Admin related routes
    
-# class UsersInfo(Resource):
-#     def get(self):
-#         return {'users': users}, 200
-# api.add_resource(UsersInfo, '/users')
+class UsersInfo(Resource):
+    @jwt_required()
+    def get(self):
+        current_user = User.query.filter_by(username=get_jwt_identity()).first()
+        if not current_user or current_user.role != 'admin':
+            return {'message': 'Admin access required'}, 403
+        
+        users = User.query.all()
+        users = [{'id': u.id, 'username': u.username, 'role': u.role} for u in users]
+        return {'users': users}, 200
+api.add_resource(UsersInfo, '/users')
 
 ## User related routes
 
 class Posts(Resource):
+    @jwt_required()
     def get(self, id=None):
         if id:
             post = Post.query.get(id)
@@ -62,6 +71,7 @@ class Posts(Resource):
         posts = [{'id': p.id, 'title': p.title, 'content': p.content, 'user_id': p.user_id} for p in posts]
         return {'posts': posts, 'message': 'All posts'}, 200
 
+    @jwt_required()
     def post(self):
         data = request.get_json()
         if not data or 'title' not in data or 'content' not in data:
@@ -73,6 +83,7 @@ class Posts(Resource):
         db.session.add(new_post); db.session.commit()
         return {'message': 'Post created successfully'}, 201
     
+    @jwt_required()
     def put(self, id):
         data = request.get_json()
         if not data or 'title' not in data or 'content' not in data:
@@ -87,6 +98,7 @@ class Posts(Resource):
         db.session.commit()
         return {'message': 'Post updated successfully'}, 200
     
+    @jwt_required()
     def delete(self, id):
         post = Post.query.get(id)
         if not post:
