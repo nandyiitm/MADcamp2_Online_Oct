@@ -5,6 +5,11 @@ api = Api()
 
 from models import User, Post, db
 
+class HelloWorld(Resource):
+    def get(self):
+        return {'message': 'Bye, World!'}, 200
+api.add_resource(HelloWorld, '/')
+
 ## Authentication related routes
 
 class UserRegister(Resource):

@@ -1,15 +1,16 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+    <h1>This is my MAD2 Project</h1>
+
+    <p>
+      This project is a simple Vue.js application which connects with flask backend server. The project is made as part of MAD2 bootcamp.
+    </p>
+
+    <a href="/">Go back</a>
+
   </div>
 </template>
 
 <style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-  }
-}
+
 </style>
