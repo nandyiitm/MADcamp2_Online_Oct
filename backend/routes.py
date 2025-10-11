@@ -17,6 +17,7 @@ class UserRegister(Resource):
         data = request.get_json()
         # validation of input data
         if not data or 'username' not in data or 'password' not in data:
+            print(data)
             return {'message': 'Username and password required'}, 400
         if not data['username'] or not data['password']:
             return {'message': 'Username and password cannot be empty'}, 400
@@ -44,7 +45,7 @@ class UserLogin(Resource):
         
         # create a token
         token = create_access_token(identity=user.username)
-        return {'message': 'Login successful', 'user_id': user.id, 'token': token}, 200
+        return {'message': 'Login successful', 'user_id': user.id, 'token': token, 'role': user.role}, 200
 api.add_resource(UserLogin, '/login')
 
 ## Admin related routes
@@ -58,7 +59,7 @@ class UsersInfo(Resource):
         
         users = User.query.all()
         users = [{'id': u.id, 'username': u.username, 'role': u.role} for u in users]
-        return {'users': users}, 200
+        return {'users': users, 'message': 'Successfully fetched all users'}, 200
 api.add_resource(UsersInfo, '/users')
 
 ## User related routes

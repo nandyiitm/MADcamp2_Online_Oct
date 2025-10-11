@@ -1,31 +1,66 @@
 <template>
     <h1>Create account to dive in</h1>
 
-    <form action="">
-        <input type="text" placeholder="Username" />
-        <input type="password" placeholder="Password" />
-        <input type="password" placeholder="Confirm Password" />
+    <form @submit.prevent="createAccount">
+        <p>{{ username }} | {{ password }} | {{ confirmPassword }}</p>
+        <input v-model="username" type="text" placeholder="Username" required/>
+        <input v-model="password" type="password" placeholder="Password" required/>
+        <input v-model="confirmPassword" type="password" placeholder="Confirm Password" required/>
         <button type="submit">Register</button>
     </form>
 
-    <div id="msg"></div>
-    <button @click="showMessage">Show Message</button>
+    <div id="msg">{{ message }}</div>
 
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import router from '@/router';
 
-function showMessage() {
-    const msg = document.getElementById('msg');
-    fetch('http://127.0.0.1:5000')
-        .then(response => response.json())
+const username = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const message = ref('');
+
+
+function createAccount() {
+    alert('creating account');
+    if (password.value !== confirmPassword.value) {
+        message.value = "Passwords do not match!";
+        return;
+    }
+
+    fetch('http://127.0.0.1:5000/register', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            username: username.value,
+            password: password.value
+        })
+    })
+        .then(response => {
+            if (!response.ok) {
+                if (response.status === 401) {
+                    router.push('/login');
+                    throw new Error('Unauthorized: Please log in to access this resource.');
+                }
+                response.json().then(data => {
+                    message.value = data.message || 'Error occurred';
+                });
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
         .then(data => {
             console.log(data);
-            msg.innerText = data.message;
+            message.value = data.message;
+            router.push('/login');
         })
         .catch(error => {
             console.error('Error fetching message:', error);
-            msg.innerText = 'Error fetching message';
+            message.value = 'Error fetching message';
         });
 }
 
